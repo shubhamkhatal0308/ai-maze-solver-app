@@ -1,0 +1,4 @@
+# External dependencies for AI Maze Solver & Route Visualizer
+# Note: Python standard library modules (tkinter, collections, time, unittest) are not listed here.
+numpy>=1.24.0
+matplotlib>=3.7.0

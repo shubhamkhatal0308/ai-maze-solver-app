@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Maze Solver & Route Visualizer</title>
+  <style>
+    :root {
+      --bg: #111827;
+      --panel: #1F2937;
+      --card: #111827;
+      --border: #374151;
+      --text: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --wall: #374151;
+      --empty: #F3F4F6;
+      --start: #22C55E;
+      --goal: #EF4444;
+      --explored: #60A5FA;
+      --path: #FACC15;
+      --frontier: #C084FC;
+      --dfs: #BE185D;
+      --bfs: #1D4ED8;
+      --astar: #7C3AED;
+      --compare: #059669;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    /* Header */
+    header { background-color: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header-text h1 { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+    .header-text p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+    .status-badge { background: #065F46; color: #34D399; font-weight: 700; font-size: 0.8rem; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.5px; border: 1px solid #047857; }
+
+    /* Layout */
+    .main-container { display: flex; flex: 1; padding: 16px; gap: 16px; height: calc(100vh - 72px); }
+    .sidebar { width: 380px; min-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+    .content-area { flex: 1; display: flex; flex-direction: column; background: var(--bg); border-radius: 8px; overflow: hidden; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel); }
+    .tab-btn { background: transparent; border: none; padding: 10px 20px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: #FFFFFF; background: rgba(59, 130, 246, 0.15); border-bottom-color: #3B82F6; }
+    .tab-content { flex: 1; display: none; padding: 16px; overflow: hidden; flex-direction: column; }
+    .tab-content.active { display: flex; }
+
+    /* Sections */
+    .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; }
+    .btn-row { display: flex; gap: 8px; }
+    button { cursor: pointer; border: none; border-radius: 6px; font-weight: 600; transition: filter 0.15s, transform 0.05s; display: inline-flex; align-items: center; justify-content: center; }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-dfs { background: var(--dfs); color: #FFF; padding: 8px; flex: 1; font-size: 0.85rem; }
+    .btn-bfs { background: var(--bfs); color: #FFF; padding: 8px; flex: 1; font-size: 0.85rem; }
+    .btn-astar { background: var(--astar); color: #FFF; padding: 8px; flex: 1; font-size: 0.85rem; }
+    .btn-compare { background: var(--compare); color: #FFF; padding: 10px; width: 100%; font-size: 0.9rem; }
+    .btn-stop { background: #DC2626; color: #FFF; padding: 6px; width: 100%; font-size: 0.8rem; }
+    .btn-secondary { background: var(--border); color: var(--text); padding: 7px 10px; font-size: 0.8rem; flex: 1; }
+    .btn-secondary:hover { filter: brightness(1.2); }
+
+    /* Controls */
+    select, input[type="text"] { background: #374151; color: #FFF; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 0.85rem; }
+    .radio-group { display: flex; gap: 12px; font-size: 0.85rem; align-items: center; }
+    .radio-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+    /* Cards */
+    .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+    .metric-card.dfs { border-left: 4px solid var(--dfs); }
+    .metric-card.bfs { border-left: 4px solid var(--bfs); }
+    .metric-card.astar { border-left: 4px solid var(--astar); }
+    .card-header { font-weight: 700; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .metric-line { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+    .metric-line span.val { color: var(--text); font-weight: 600; }
+    .summary-box { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; white-space: pre-line; }
+
+    /* Canvas View */
+    .canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; background: #0B0F19; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; position: relative; }
+    canvas { background: var(--bg); box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-radius: 4px; }
+    
+    /* Legend */
+    .legend-bar { display: flex; gap: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; margin-top: 10px; font-size: 0.8rem; flex-wrap: wrap; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-box { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.3); }
+
+    /* Charts Tab */
+    .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; min-height: 280px; }
+    .chart-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; }
+    .chart-panel h3 { font-size: 0.9rem; color: var(--text); margin-bottom: 12px; text-align: center; font-weight: 700; }
+    .bar-chart-area { flex: 1; display: flex; align-items: flex-end; justify-content: space-around; gap: 16px; padding: 10px 20px 0; border-bottom: 2px solid var(--border); min-height: 180px; }
+    .bar-column { display: flex; flex-direction: column; align-items: center; width: 45px; height: 100%; justify-content: flex-end; }
+    .bar-value { font-size: 0.75rem; font-weight: 700; color: #FFF; margin-bottom: 4px; text-align: center; }
+    .bar-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.4s ease; min-height: 4px; }
+    .bar-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; text-align: center; }
+    .analysis-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 16px; }
+    .analysis-card h4 { font-size: 0.9rem; margin-bottom: 6px; color: var(--text); }
+    .analysis-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; white-space: pre-line; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-text">
+      <h1>AI Maze Solver & Route Visualizer</h1>
+      <p>Explore, Solve, and Compare State Space Search Algorithms (DFS, BFS & A*)</p>
+    </div>
+    <div>
+      <span id="status-badge" class="status-badge">READY</span>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="main-container">
+
+    <!-- Left Sidebar: Controls -->
+    <div class="sidebar">
+
+      <!-- Algorithms -->
+      <div>
+        <div class="section-title">1. Search Algorithms</div>
+        <div class="btn-row" style="margin-bottom: 8px;">
+          <button id="btn-dfs" class="btn-dfs">▶ DFS</button>
+          <button id="btn-bfs" class="btn-bfs">▶ BFS</button>
+          <button id="btn-astar" class="btn-astar">▶ A*</button>
+        </div>
+        <button id="btn-compare" class="btn-compare" style="margin-bottom: 6px;">⚡ Compare Algorithms</button>
+        <button id="btn-stop" class="btn-stop" disabled>⏹ Stop Animation</button>
+      </div>
+
+      <!-- Maze Configuration -->
+      <div>
+        <div class="section-title">2. Maze Setup & Presets</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Grid Size:</span>
+          <select id="select-size">
+            <option value="10">10 x 10</option>
+            <option value="15" selected>15 x 15</option>
+            <option value="20">20 x 20</option>
+          </select>
+        </div>
+        <div class="btn-row" style="margin-bottom: 6px;">
+          <button id="btn-random" class="btn-secondary">Random Maze</button>
+          <button id="btn-demo" class="btn-secondary">Demo Preset</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-reset" class="btn-secondary">Reset Search</button>
+          <button id="btn-clear" class="btn-secondary">Clear Walls</button>
+        </div>
+      </div>
+
+      <!-- Mouse Interaction Mode -->
+      <div>
+        <div class="section-title">3. Mouse Interaction</div>
+        <div class="radio-group">
+          <label><input type="radio" name="mode" value="wall" checked> Wall Draw/Erase</label>
+          <label><input type="radio" name="mode" value="start"> Start</label>
+          <label><input type="radio" name="mode" value="goal"> Goal</label>
+        </div>
+      </div>
+
+      <!-- Animation Settings -->
+      <div>
+        <div class="section-title">4. Animation Speed</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="chk-anim" checked> Animate
+          </label>
+          <select id="select-speed">
+            <option value="50">Slow (50ms)</option>
+            <option value="20" selected>Normal (20ms)</option>
+            <option value="5">Fast (5ms)</option>
+            <option value="0">Instant (0ms)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Results Metrics -->
+      <div>
+        <div class="section-title">5. Search Metrics</div>
+        
+        <!-- DFS Card -->
+        <div class="metric-card dfs">
+          <div class="card-header" style="color: #F472B6;">DEPTH FIRST SEARCH (DFS)</div>
+          <div class="metric-line"><span>Path Found:</span><span id="dfs-found" class="val">-</span></div>
+          <div class="metric-line"><span>Nodes Explored:</span><span id="dfs-nodes" class="val">-</span></div>
+          <div class="metric-line"><span>Path Length:</span><span id="dfs-len" class="val">-</span></div>
+          <div class="metric-line"><span>Execution Time:</span><span id="dfs-time" class="val">-</span></div>
+        </div>
+
+        <!-- BFS Card -->
+        <div class="metric-card bfs">
+          <div class="card-header" style="color: #60A5FA;">BREADTH FIRST SEARCH (BFS)</div>
+          <div class="metric-line"><span>Path Found:</span><span id="bfs-found" class="val">-</span></div>
+          <div class="metric-line"><span>Nodes Explored:</span><span id="bfs-nodes" class="val">-</span></div>
+          <div class="metric-line"><span>Path Length:</span><span id="bfs-len" class="val">-</span></div>
+          <div class="metric-line"><span>Execution Time:</span><span id="bfs-time" class="val">-</span></div>
+        </div>
+
+        <!-- A* Card -->
+        <div class="metric-card astar">
+          <div class="card-header" style="color: #C084FC;">A* SEARCH (MANHATTAN)</div>
+          <div class="metric-line"><span>Path Found:</span><span id="astar-found" class="val">-</span></div>
+          <div class="metric-line"><span>Nodes Explored:</span><span id="astar-nodes" class="val">-</span></div>
+          <div class="metric-line"><span>Path Length:</span><span id="astar-len" class="val">-</span></div>
+          <div class="metric-line"><span>Execution Time:</span><span id="astar-time" class="val">-</span></div>
+        </div>
+
+        <!-- Comparison Summary -->
+        <div id="summary-box" class="summary-box">Ready. Click Run or Compare to begin.</div>
+      </div>
+
+    </div>
+
+    <!-- Right Content Area -->
+    <div class="content-area">
+      <!-- Tabs Header -->
+      <div class="tabs">
+        <button id="tab-btn-maze" class="tab-btn active">Interactive Maze Visualizer</button>
+        <button id="tab-btn-charts" class="tab-btn">Performance Analytics & Charts</button>
+      </div>
+
+      <!-- Tab 1: Maze Visualizer -->
+      <div id="tab-maze" class="tab-content active">
+        <div class="canvas-container" id="canvas-wrapper">
+          <canvas id="mazeCanvas"></canvas>
+        </div>
+
+        <!-- Color Legend -->
+        <div class="legend-bar">
+          <span style="font-weight: 700; color: var(--text-muted);">COLOR LEGEND:</span>
+          <div class="legend-item"><div class="legend-box" style="background: var(--start);"></div><span>Start (S)</span></div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--goal);"></div><span>Goal (G)</span></div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--wall);"></div><span>Wall</span></div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--empty);"></div><span>Empty</span></div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--explored);"></div><span>Explored</span></div>
+          <div class="legend-item"><div class="legend-box" style="background: var(--path);"></div><span>Final Path</span></div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Performance Charts -->
+      <div id="tab-charts" class="tab-content">
+        <div class="charts-grid">
+          <!-- Chart 1: Nodes Explored -->
+          <div class="chart-panel">
+            <h3>Nodes Explored</h3>
+            <div class="bar-chart-area" id="chart-nodes">
+              <div class="bar-column"><div id="val-nodes-dfs" class="bar-value">-</div><div id="bar-nodes-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-nodes-bfs" class="bar-value">-</div><div id="bar-nodes-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-nodes-astar" class="bar-value">-</div><div id="bar-nodes-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+            </div>
+          </div>
+
+          <!-- Chart 2: Path Length -->
+          <div class="chart-panel">
+            <h3>Path Length (Steps)</h3>
+            <div class="bar-chart-area" id="chart-length">
+              <div class="bar-column"><div id="val-len-dfs" class="bar-value">-</div><div id="bar-len-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-len-bfs" class="bar-value">-</div><div id="bar-len-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-len-astar" class="bar-value">-</div><div id="bar-len-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+            </div>
+          </div>
+
+          <!-- Chart 3: Execution Time -->
+          <div class="chart-panel">
+            <h3>Execution Time (ms)</h3>
+            <div class="bar-chart-area" id="chart-time">
+              <div class="bar-column"><div id="val-time-dfs" class="bar-value">-</div><div id="bar-time-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-time-bfs" class="bar-value">-</div><div id="bar-time-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-time-astar" class="bar-value">-</div><div id="bar-time-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <h4>Algorithm Performance Analysis</h4>
+          <p id="detail-analysis">Run 'Compare Algorithms' to generate full empirical benchmarks across DFS, BFS, and A* Search.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // State
+    let rows = 15;
+    let cols = 15;
+    let grid = [];
+    let start = [0, 0];
+    let goal = [14, 14];
+    let exploredCells = new Set();
+    let pathCells = new Set();
+    let isMouseDown = false;
+    let dragVal = null;
+    let animationTimer = null;
+    let isAnimating = false;
+
+    // Track latest results per algorithm (null until executed)
+    let algorithmResults = {
+      DFS: null,
+      BFS: null,
+      'A*': null,
+    };
+
+    const canvas = document.getElementById('mazeCanvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = document.getElementById('canvas-wrapper');
+
+    // Load Demo Preset initially
+    async function loadDemo() {
+      stopAnimation();
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset: `demo_${rows}x${rows}` })
+      });
+      const data = await res.json();
+      grid = data.grid;
+      start = data.start;
+      goal = data.goal;
+      resetSearch();
+      setStatus('READY', '#065F46', '#34D399');
+      document.getElementById('summary-box').innerText = `Loaded demonstration preset (${rows}x${cols}). Ready for search.`;
+    }
+
+    // Generate Random Solvable Maze
+    async function generateRandom() {
+      stopAnimation();
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows, cols, density: 0.28, guarantee_solvable: true })
+      });
+      const data = await res.json();
+      grid = data.grid;
+      start = data.start;
+      goal = data.goal;
+      resetSearch();
+      setStatus('READY', '#065F46', '#34D399');
+      document.getElementById('summary-box').innerText = `New random solvable maze generated (${data.wall_density_pct}% walls).`;
+    }
+
+    function clearWalls() {
+      stopAnimation();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          grid[r][c] = 0;
+        }
+      }
+      resetSearch();
+      setStatus('READY', '#065F46', '#34D399');
+      document.getElementById('summary-box').innerText = "All walls removed. Clean open grid.";
+    }
+
+    function resetSearch() {
+      stopAnimation();
+      exploredCells.clear();
+      pathCells.clear();
+      render();
+
+      // Reset stored algorithm results
+      algorithmResults = {
+        DFS: null,
+        BFS: null,
+        'A*': null,
+      };
+
+      // 1. Reset all metrics values in the sidebar cards to default '-'
+      ['dfs', 'bfs', 'astar'].forEach(prefix => {
+        const foundEl = document.getElementById(`${prefix}-found`);
+        const nodesEl = document.getElementById(`${prefix}-nodes`);
+        const lenEl = document.getElementById(`${prefix}-len`);
+        const timeEl = document.getElementById(`${prefix}-time`);
+        if (foundEl) foundEl.innerText = '-';
+        if (nodesEl) nodesEl.innerText = '-';
+        if (lenEl) lenEl.innerText = '-';
+        if (timeEl) timeEl.innerText = '-';
+      });
+
+      // Reset summary and analysis text
+      document.getElementById('summary-box').innerText = "Search visualization and metrics reset. Ready for search.";
+      document.getElementById('detail-analysis').innerText = "Run an individual algorithm or click 'Compare Algorithms' to generate empirical benchmarks.";
+
+      // 2. Reset charts under Performance Analytics & Charts back to 0% and '-'
+      resetCharts();
+
+      setStatus('READY', '#065F46', '#34D399');
+    }
+
+    function resetCharts() {
+      ['nodes', 'len', 'time'].forEach(metric => {
+        ['dfs', 'bfs', 'astar'].forEach(algo => {
+          const valEl = document.getElementById(`val-${metric}-${algo}`);
+          const barEl = document.getElementById(`bar-${metric}-${algo}`);
+          if (valEl) valEl.innerText = '-';
+          if (barEl) barEl.style.height = '0%';
+        });
+      });
+    }
+
+    function setStatus(text, bg, fg) {
+      const b = document.getElementById('status-badge');
+      b.innerText = text;
+      b.style.background = bg;
+      b.style.color = fg;
+      b.style.borderColor = fg;
+    }
+
+    // Canvas Sizing & Rendering
+    function resizeCanvas() {
+      const w = wrapper.clientWidth - 24;
+      const h = wrapper.clientHeight - 24;
+      const size = Math.max(180, Math.min(w, h));
+      canvas.width = size;
+      canvas.height = size;
+      render();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function render() {
+      if (!grid || grid.length === 0) return;
+      const cellSize = canvas.width / cols;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = c * cellSize;
+          const y = r * cellSize;
+          const key = `${r},${c}`;
+
+          // Color priority
+          let fill = '#F3F4F6';
+          if (grid[r][c] === 1) fill = '#374151';
+          if (exploredCells.has(key)) fill = '#60A5FA';
+          if (pathCells.has(key)) fill = '#FACC15';
+          if (r === start[0] && c === start[1]) fill = '#22C55E';
+          if (r === goal[0] && c === goal[1]) fill = '#EF4444';
+
+          ctx.fillStyle = fill;
+          ctx.fillRect(x, y, cellSize, cellSize);
+
+          // Grid borders
+          ctx.strokeStyle = grid[r][c] === 1 ? '#1F2937' : '#D1D5DB';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, cellSize, cellSize);
+
+          // Labels
+          if ((r === start[0] && c === start[1]) || (r === goal[0] && c === goal[1])) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${Math.max(10, cellSize * 0.5)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(r === start[0] && c === start[1] ? 'S' : 'G', x + cellSize / 2, y + cellSize / 2);
+          }
+        }
+      }
+    }
+
+    // Mouse Interaction
+    function getCellFromMouse(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const cellSize = canvas.width / cols;
+      const c = Math.floor(x / cellSize);
+      const r = Math.floor(y / cellSize);
+      if (r >= 0 && r < rows && c >= 0 && c < cols) return [r, c];
+      return null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (isAnimating) return;
+      const cell = getCellFromMouse(e);
+      if (!cell) return;
+      const [r, c] = cell;
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+
+      if (mode === 'start') {
+        start = [r, c];
+        grid[r][c] = 0;
+        resetSearch();
+      } else if (mode === 'goal') {
+        goal = [r, c];
+        grid[r][c] = 0;
+        resetSearch();
+      } else {
+        if ((r === start[0] && c === start[1]) || (r === goal[0] && c === goal[1])) return;
+        isMouseDown = true;
+        dragVal = grid[r][c] === 1 ? 0 : 1;
+        grid[r][c] = dragVal;
+        resetSearch();
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isMouseDown || isAnimating) return;
+      const cell = getCellFromMouse(e);
+      if (!cell) return;
+      const [r, c] = cell;
+      if ((r === start[0] && c === start[1]) || (r === goal[0] && c === goal[1])) return;
+      if (grid[r][c] !== dragVal) {
+        grid[r][c] = dragVal;
+        render();
+      }
+    });
+
+    window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+    // Search Execution & Animation for a Single Algorithm
+    async function runSearch(algo) {
+      stopAnimation();
+      setStatus('SEARCHING', '#1E40AF', '#93C5FD');
+      setControls(false);
+
+      // Clear previous path/explored visualization before running the new search
+      exploredCells.clear();
+      pathCells.clear();
+      render();
+
+      const res = await fetch('/api/solve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ algorithm: algo, grid, start, goal })
+      });
+      const data = await res.json();
+
+      // Update ONLY this specific algorithm's metric card and result state
+      algorithmResults[algo] = data;
+      updateCard(algo, data);
+
+      // Update chart bars reflecting the currently executed algorithms (leaving unrun ones at '-')
+      updateCharts();
+
+      const shouldAnimate = document.getElementById('chk-anim').checked;
+      const speed = parseInt(document.getElementById('select-speed').value, 10);
+
+      if (!shouldAnimate || speed === 0) {
+        data.exploration_order.forEach(([r, c]) => exploredCells.add(`${r},${c}`));
+        if (data.path) data.path.forEach(([r, c]) => pathCells.add(`${r},${c}`));
+        render();
+        finishSearch(data);
+        return;
+      }
+
+      // Step-by-step animation
+      isAnimating = true;
+      document.getElementById('btn-stop').disabled = false;
+      const order = data.exploration_order;
+      const path = data.path || [];
+      let idx = 0;
+
+      function stepExploration() {
+        const batch = speed < 15 ? 4 : 1;
+        for (let b = 0; b < batch; b++) {
+          if (idx < order.length) {
+            const [r, c] = order[idx++];
+            exploredCells.add(`${r},${c}`);
+          }
+        }
+        render();
+        if (idx < order.length) {
+          animationTimer = setTimeout(stepExploration, speed);
+        } else {
+          // Animate path
+          let pIdx = 0;
+          function stepPath() {
+            if (pIdx < path.length) {
+              const [r, c] = path[pIdx++];
+              pathCells.add(`${r},${c}`);
+              render();
+              animationTimer = setTimeout(stepPath, Math.max(25, speed));
+            } else {
+              finishSearch(data);
+            }
+          }
+          if (path.length > 0) {
+            animationTimer = setTimeout(stepPath, Math.max(40, speed));
+          } else {
+            finishSearch(data);
+          }
+        }
+      }
+      stepExploration();
+    }
+
+    function finishSearch(data) {
+      isAnimating = false;
+      document.getElementById('btn-stop').disabled = true;
+      setControls(true);
+      if (data.path_found) {
+        setStatus('SOLVED', '#065F46', '#34D399');
+        document.getElementById('summary-box').innerText = `${data.algorithm} finished: Route of ${data.path_length} steps located! Explored ${data.nodes_explored} nodes in ${data.execution_time_ms.toFixed(3)} ms.`;
+      } else {
+        setStatus('NO PATH', '#991B1B', '#FCA5A5');
+        document.getElementById('summary-box').innerText = `${data.algorithm} finished: No path exists to the goal.`;
+      }
+    }
+
+    function stopAnimation() {
+      if (animationTimer) clearTimeout(animationTimer);
+      animationTimer = null;
+      isAnimating = false;
+      document.getElementById('btn-stop').disabled = true;
+      setControls(true);
+    }
+
+    function setControls(enabled) {
+      document.querySelectorAll('.sidebar button:not(#btn-stop)').forEach(b => b.disabled = !enabled);
+    }
+
+    function updateCard(algo, d) {
+      const prefix = algo === 'DFS' ? 'dfs' : (algo === 'BFS' ? 'bfs' : 'astar');
+      document.getElementById(`${prefix}-found`).innerText = d.path_found ? 'Yes' : 'No';
+      document.getElementById(`${prefix}-nodes`).innerText = d.nodes_explored;
+      document.getElementById(`${prefix}-len`).innerText = (d.path_found && d.path_length !== null) ? `${d.path_length} steps` : 'N/A';
+      document.getElementById(`${prefix}-time`).innerText = `${d.execution_time_ms.toFixed(3)} ms`;
+    }
+
+    // Compare Algorithms (Simultaneously runs DFS, BFS, and A*)
+    async function runCompare() {
+      stopAnimation();
+      setStatus('COMPARING', '#4C1D95', '#C4B5FD');
+
+      const res = await fetch('/api/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grid, start, goal })
+      });
+      const data = await res.json();
+      const { dfs, bfs, astar, summary } = data;
+
+      // Update all three algorithm records & cards simultaneously
+      algorithmResults['DFS'] = dfs;
+      algorithmResults['BFS'] = bfs;
+      algorithmResults['A*'] = astar;
+
+      updateCard('DFS', dfs);
+      updateCard('BFS', bfs);
+      updateCard('A*', astar);
+
+      // Display optimal route on canvas
+      exploredCells.clear();
+      pathCells.clear();
+      bfs.exploration_order.forEach(([r, c]) => exploredCells.add(`${r},${c}`));
+      if (bfs.path) bfs.path.forEach(([r, c]) => pathCells.add(`${r},${c}`));
+      render();
+
+      document.getElementById('summary-box').innerText = summary;
+      document.getElementById('detail-analysis').innerText = summary;
+
+      // Update Bar Charts across all algorithms
+      updateCharts();
+
+      if (bfs.path_found) {
+        setStatus('SOLVED', '#065F46', '#34D399');
+      } else {
+        setStatus('NO PATH', '#991B1B', '#FCA5A5');
+      }
+    }
+
+    // Updates chart bars dynamically based on currently executed algorithms
+    function updateCharts() {
+      const dfs = algorithmResults['DFS'];
+      const bfs = algorithmResults['BFS'];
+      const astar = algorithmResults['A*'];
+
+      const executed = [dfs, bfs, astar].filter(Boolean);
+      if (executed.length === 0) {
+        resetCharts();
+        return;
+      }
+
+      // 1. Nodes Explored
+      const maxNodes = Math.max(...executed.map(d => d.nodes_explored), 1);
+      setMetricBar('nodes', 'dfs', dfs, maxNodes, d => `${d.nodes_explored}`, d => d.nodes_explored);
+      setMetricBar('nodes', 'bfs', bfs, maxNodes, d => `${d.nodes_explored}`, d => d.nodes_explored);
+      setMetricBar('nodes', 'astar', astar, maxNodes, d => `${d.nodes_explored}`, d => d.nodes_explored);
+
+      // 2. Path Length (Steps)
+      const lengths = executed.map(d => (d.path_found && d.path_length !== null) ? d.path_length : 0);
+      const maxLen = Math.max(...lengths, 1);
+      setMetricBar('len', 'dfs', dfs, maxLen, d => d.path_found ? `${d.path_length}s` : 'No Path', d => (d.path_found && d.path_length !== null) ? d.path_length : 0);
+      setMetricBar('len', 'bfs', bfs, maxLen, d => d.path_found ? `${d.path_length}s` : 'No Path', d => (d.path_found && d.path_length !== null) ? d.path_length : 0);
+      setMetricBar('len', 'astar', astar, maxLen, d => d.path_found ? `${d.path_length}s` : 'No Path', d => (d.path_found && d.path_length !== null) ? d.path_length : 0);
+
+      // 3. Execution Time (ms)
+      const maxTime = Math.max(...executed.map(d => d.execution_time_ms), 0.001);
+      setMetricBar('time', 'dfs', dfs, maxTime, d => `${d.execution_time_ms.toFixed(2)}ms`, d => d.execution_time_ms);
+      setMetricBar('time', 'bfs', bfs, maxTime, d => `${d.execution_time_ms.toFixed(2)}ms`, d => d.execution_time_ms);
+      setMetricBar('time', 'astar', astar, maxTime, d => `${d.execution_time_ms.toFixed(2)}ms`, d => d.execution_time_ms);
+    }
+
+    function setMetricBar(metric, algoPrefix, data, maxVal, textFn, numFn) {
+      const valEl = document.getElementById(`val-${metric}-${algoPrefix}`);
+      const barEl = document.getElementById(`bar-${metric}-${algoPrefix}`);
+      if (!valEl || !barEl) return;
+
+      if (!data) {
+        valEl.innerText = '-';
+        barEl.style.height = '0%';
+        return;
+      }
+
+      valEl.innerText = textFn(data);
+      const num = numFn(data);
+      const pct = maxVal > 0 ? (num / maxVal) * 100 : 0;
+      barEl.style.height = `${Math.max(6, Math.min(100, pct))}%`;
+    }
+
+    // Event Listeners
+    document.getElementById('btn-dfs').addEventListener('click', () => runSearch('DFS'));
+    document.getElementById('btn-bfs').addEventListener('click', () => runSearch('BFS'));
+    document.getElementById('btn-astar').addEventListener('click', () => runSearch('A*'));
+    document.getElementById('btn-compare').addEventListener('click', runCompare);
+    document.getElementById('btn-stop').addEventListener('click', stopAnimation);
+    document.getElementById('btn-random').addEventListener('click', generateRandom);
+    document.getElementById('btn-demo').addEventListener('click', loadDemo);
+    document.getElementById('btn-clear').addEventListener('click', clearWalls);
+    document.getElementById('btn-reset').addEventListener('click', resetSearch);
+
+    document.getElementById('select-size').addEventListener('change', (e) => {
+      const s = parseInt(e.target.value, 10);
+      rows = s;
+      cols = s;
+      start = [0, 0];
+      goal = [s - 1, s - 1];
+      loadDemo();
+    });
+
+    // Tab Switching
+    document.getElementById('tab-btn-maze').addEventListener('click', () => {
+      document.getElementById('tab-btn-maze').classList.add('active');
+      document.getElementById('tab-btn-charts').classList.remove('active');
+      document.getElementById('tab-maze').classList.add('active');
+      document.getElementById('tab-charts').classList.remove('active');
+      resizeCanvas();
+    });
+    document.getElementById('tab-btn-charts').addEventListener('click', () => {
+      document.getElementById('tab-btn-charts').classList.add('active');
+      document.getElementById('tab-btn-maze').classList.remove('active');
+      document.getElementById('tab-charts').classList.add('active');
+      document.getElementById('tab-maze').classList.remove('active');
+    });
+
+    // Initial Load
+    window.onload = () => {
+      resizeCanvas();
+      loadDemo();
+    };
+  </script>
+</body>
+</html>
