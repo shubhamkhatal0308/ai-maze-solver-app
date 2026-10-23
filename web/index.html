@@ -34,9 +34,9 @@
     .status-badge { background: #065F46; color: #34D399; font-weight: 700; font-size: 0.8rem; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.5px; border: 1px solid #047857; }
 
     /* Layout */
-    .main-container { display: flex; flex: 1; padding: 16px; gap: 16px; height: calc(100vh - 72px); }
+    .main-container { display: flex; flex: 1; padding: 16px; gap: 16px; min-height: calc(100vh - 72px); }
     .sidebar { width: 380px; min-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-    .content-area { flex: 1; display: flex; flex-direction: column; background: var(--bg); border-radius: 8px; overflow: hidden; }
+    .content-area { flex: 1; display: flex; flex-direction: column; background: var(--bg); border-radius: 8px; overflow: hidden; min-height: 480px; }
 
     /* Tabs */
     .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel); }
@@ -75,8 +75,8 @@
     .summary-box { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; white-space: pre-line; }
 
     /* Canvas View */
-    .canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; background: #0B0F19; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; position: relative; }
-    canvas { background: var(--bg); box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-radius: 4px; }
+    .canvas-container { flex: 1; display: flex; justify-content: center; align-items: center; background: #0B0F19; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; position: relative; min-height: 380px; min-width: 320px; width: 100%; }
+    canvas { background: var(--bg); box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-radius: 4px; display: block; }
     
     /* Legend */
     .legend-bar { display: flex; gap: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; margin-top: 10px; font-size: 0.8rem; flex-wrap: wrap; align-items: center; }
@@ -245,9 +245,9 @@
           <div class="chart-panel">
             <h3>Nodes Explored</h3>
             <div class="bar-chart-area" id="chart-nodes">
-              <div class="bar-column"><div id="val-nodes-dfs" class="bar-value">-</div><div id="bar-nodes-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
-              <div class="bar-column"><div id="val-nodes-bfs" class="bar-value">-</div><div id="bar-nodes-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
-              <div class="bar-column"><div id="val-nodes-astar" class="bar-value">-</div><div id="bar-nodes-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+              <div class="bar-column"><div id="val-nodes-dfs" class="bar-value">-</div><div id="bar-nodes-dfs" class="bar-fill" style="background: var(--dfs); height: 0%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-nodes-bfs" class="bar-value">-</div><div id="bar-nodes-bfs" class="bar-fill" style="background: var(--bfs); height: 0%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-nodes-astar" class="bar-value">-</div><div id="bar-nodes-astar" class="bar-fill" style="background: var(--astar); height: 0%;"></div><div class="bar-label">A*</div></div>
             </div>
           </div>
 
@@ -255,9 +255,9 @@
           <div class="chart-panel">
             <h3>Path Length (Steps)</h3>
             <div class="bar-chart-area" id="chart-length">
-              <div class="bar-column"><div id="val-len-dfs" class="bar-value">-</div><div id="bar-len-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
-              <div class="bar-column"><div id="val-len-bfs" class="bar-value">-</div><div id="bar-len-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
-              <div class="bar-column"><div id="val-len-astar" class="bar-value">-</div><div id="bar-len-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+              <div class="bar-column"><div id="val-len-dfs" class="bar-value">-</div><div id="bar-len-dfs" class="bar-fill" style="background: var(--dfs); height: 0%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-len-bfs" class="bar-value">-</div><div id="bar-len-bfs" class="bar-fill" style="background: var(--bfs); height: 0%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-len-astar" class="bar-value">-</div><div id="bar-len-astar" class="bar-fill" style="background: var(--astar); height: 0%;"></div><div class="bar-label">A*</div></div>
             </div>
           </div>
 
@@ -265,16 +265,16 @@
           <div class="chart-panel">
             <h3>Execution Time (ms)</h3>
             <div class="bar-chart-area" id="chart-time">
-              <div class="bar-column"><div id="val-time-dfs" class="bar-value">-</div><div id="bar-time-dfs" class="bar-fill" style="background: var(--dfs); height: 5%;"></div><div class="bar-label">DFS</div></div>
-              <div class="bar-column"><div id="val-time-bfs" class="bar-value">-</div><div id="bar-time-bfs" class="bar-fill" style="background: var(--bfs); height: 5%;"></div><div class="bar-label">BFS</div></div>
-              <div class="bar-column"><div id="val-time-astar" class="bar-value">-</div><div id="bar-time-astar" class="bar-fill" style="background: var(--astar); height: 5%;"></div><div class="bar-label">A*</div></div>
+              <div class="bar-column"><div id="val-time-dfs" class="bar-value">-</div><div id="bar-time-dfs" class="bar-fill" style="background: var(--dfs); height: 0%;"></div><div class="bar-label">DFS</div></div>
+              <div class="bar-column"><div id="val-time-bfs" class="bar-value">-</div><div id="bar-time-bfs" class="bar-fill" style="background: var(--bfs); height: 0%;"></div><div class="bar-label">BFS</div></div>
+              <div class="bar-column"><div id="val-time-astar" class="bar-value">-</div><div id="bar-time-astar" class="bar-fill" style="background: var(--astar); height: 0%;"></div><div class="bar-label">A*</div></div>
             </div>
           </div>
         </div>
 
         <div class="analysis-card">
           <h4>Algorithm Performance Analysis</h4>
-          <p id="detail-analysis">Run 'Compare Algorithms' to generate full empirical benchmarks across DFS, BFS, and A* Search.</p>
+          <p id="detail-analysis">Run an individual algorithm or click 'Compare Algorithms' to generate empirical benchmarks across DFS, BFS, and A* Search.</p>
         </div>
       </div>
 
@@ -282,12 +282,277 @@
   </div>
 
   <script>
-    // State
+    // =========================================================================
+    // Client-Side Maze Generators (Guaranteed Fallback & Synchronous Startup)
+    // =========================================================================
+    function getDemoPresetGrid(size) {
+      const g = [];
+      for (let r = 0; r < size; r++) {
+        g.push(new Array(size).fill(0));
+      }
+      if (size === 15) {
+        const walls = [
+          [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [8, 2], [9, 2], [10, 2], [11, 2], [12, 2],
+          [2, 4], [3, 4], [4, 4], [5, 4], [7, 4], [8, 4], [9, 4], [10, 4], [11, 4], [13, 4], [14, 4],
+          [0, 6], [1, 6], [3, 6], [4, 6], [5, 6], [6, 6], [7, 6], [9, 6], [10, 6], [11, 6], [12, 6],
+          [2, 8], [3, 8], [4, 8], [6, 8], [7, 8], [8, 8], [9, 8], [11, 8], [12, 8], [13, 8], [14, 8],
+          [1, 10], [2, 10], [3, 10], [4, 10], [5, 10], [7, 10], [8, 10], [9, 10], [10, 10], [12, 10], [13, 10],
+          [0, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [8, 12], [9, 12], [10, 12], [11, 12], [13, 12],
+          [4, 3], [8, 3], [6, 5], [10, 5], [3, 7], [9, 7], [5, 9], [11, 9], [7, 11], [2, 13], [8, 13]
+        ];
+        for (const [r, c] of walls) {
+          if (r < 15 && c < 15) g[r][c] = 1;
+        }
+      } else if (size === 10) {
+        const walls = [
+          [1, 1], [2, 1], [3, 1], [4, 1], [6, 1], [7, 1], [8, 1],
+          [1, 3], [2, 3], [4, 3], [5, 3], [6, 3], [8, 3], [9, 3],
+          [0, 5], [2, 5], [3, 5], [4, 5], [6, 5], [7, 5], [8, 5],
+          [1, 7], [2, 7], [3, 7], [5, 7], [6, 7], [7, 7], [9, 7],
+          [4, 2], [7, 4], [3, 6], [6, 8]
+        ];
+        for (const [r, c] of walls) {
+          if (r < 10 && c < 10) g[r][c] = 1;
+        }
+      } else {
+        return generateClientRandomGrid(size, size, 0.28, true);
+      }
+      g[0][0] = 0;
+      g[size - 1][size - 1] = 0;
+      return g;
+    }
+
+    function generateClientRandomGrid(rCount, cCount, density = 0.28, guaranteeSolvable = true) {
+      const g = [];
+      for (let r = 0; r < rCount; r++) {
+        const row = [];
+        for (let c = 0; c < cCount; c++) {
+          row.push(Math.random() < density ? 1 : 0);
+        }
+        g.push(row);
+      }
+      g[0][0] = 0;
+      g[rCount - 1][cCount - 1] = 0;
+
+      if (guaranteeSolvable) {
+        let currR = 0;
+        let currC = 0;
+        const goalR = rCount - 1;
+        const goalC = cCount - 1;
+        g[currR][currC] = 0;
+
+        const moves = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        const maxSteps = rCount * cCount * 3;
+        let steps = 0;
+
+        while ((currR !== goalR || currC !== goalC) && steps < maxSteps) {
+          steps++;
+          const dr = goalR - currR;
+          const dc = goalC - currC;
+          const towardsMoves = [];
+          if (dr > 0) towardsMoves.push([1, 0]);
+          else if (dr < 0) towardsMoves.push([-1, 0]);
+          if (dc > 0) towardsMoves.push([0, 1]);
+          else if (dc < 0) towardsMoves.push([0, -1]);
+
+          let move;
+          if (towardsMoves.length > 0 && Math.random() < 0.75) {
+            move = towardsMoves[Math.floor(Math.random() * towardsMoves.length)];
+          } else {
+            move = moves[Math.floor(Math.random() * moves.length)];
+          }
+
+          const nr = currR + move[0];
+          const nc = currC + move[1];
+          if (nr >= 0 && nr < rCount && nc >= 0 && nc < cCount) {
+            currR = nr;
+            currC = nc;
+            g[currR][currC] = 0;
+          }
+        }
+        g[goalR][goalC] = 0;
+      }
+      return g;
+    }
+
+    // =========================================================================
+    // Client-Side Search Algorithm Engine (DFS, BFS & A* Manhattan)
+    // =========================================================================
+    function clientSolve(algo, gridMat, startCoord, goalCoord) {
+      const t0 = performance.now();
+      const rCount = gridMat.length;
+      const cCount = gridMat[0].length;
+      const legalActions = [[-1, 0], [0, 1], [1, 0], [0, -1]]; // Up, Right, Down, Left
+
+      const explorationOrder = [];
+      const visited = new Set();
+      const parent = {};
+      let pathFound = false;
+      const startKey = `${startCoord[0]},${startCoord[1]}`;
+      const goalKey = `${goalCoord[0]},${goalCoord[1]}`;
+
+      if (gridMat[startCoord[0]][startCoord[1]] === 1 || gridMat[goalCoord[0]][goalCoord[1]] === 1) {
+        return {
+          algorithm: algo,
+          path_found: false,
+          path: null,
+          nodes_explored: 0,
+          path_length: null,
+          execution_time_ms: Math.max(0.05, performance.now() - t0),
+          exploration_order: [],
+          status_message: "Start or Goal is blocked by a wall"
+        };
+      }
+
+      if (algo === 'DFS') {
+        const stack = [startCoord];
+        visited.add(startKey);
+        while (stack.length > 0) {
+          const curr = stack.pop();
+          explorationOrder.push(curr);
+          if (curr[0] === goalCoord[0] && curr[1] === goalCoord[1]) {
+            pathFound = true;
+            break;
+          }
+          // Reverse order when pushing so that Up is popped first
+          for (let i = legalActions.length - 1; i >= 0; i--) {
+            const [dr, dc] = legalActions[i];
+            const nr = curr[0] + dr, nc = curr[1] + dc;
+            if (nr >= 0 && nr < rCount && nc >= 0 && nc < cCount && gridMat[nr][nc] === 0) {
+              const key = `${nr},${nc}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                parent[key] = curr;
+                stack.push([nr, nc]);
+              }
+            }
+          }
+        }
+      } else if (algo === 'BFS') {
+        const queue = [startCoord];
+        visited.add(startKey);
+        while (queue.length > 0) {
+          const curr = queue.shift();
+          explorationOrder.push(curr);
+          if (curr[0] === goalCoord[0] && curr[1] === goalCoord[1]) {
+            pathFound = true;
+            break;
+          }
+          for (const [dr, dc] of legalActions) {
+            const nr = curr[0] + dr, nc = curr[1] + dc;
+            if (nr >= 0 && nr < rCount && nc >= 0 && nc < cCount && gridMat[nr][nc] === 0) {
+              const key = `${nr},${nc}`;
+              if (!visited.has(key)) {
+                visited.add(key);
+                parent[key] = curr;
+                queue.push([nr, nc]);
+              }
+            }
+          }
+        }
+      } else { // A* Search with Manhattan Heuristic
+        const h = (r, c) => Math.abs(r - goalCoord[0]) + Math.abs(c - goalCoord[1]);
+        const gScore = {};
+        gScore[startKey] = 0;
+        const openSet = [{ coord: startCoord, f: h(startCoord[0], startCoord[1]) }];
+        const closedSet = new Set();
+
+        while (openSet.length > 0) {
+          let bestIdx = 0;
+          for (let i = 1; i < openSet.length; i++) {
+            if (openSet[i].f < openSet[bestIdx].f) bestIdx = i;
+          }
+          const currItem = openSet.splice(bestIdx, 1)[0];
+          const curr = currItem.coord;
+          const key = `${curr[0]},${curr[1]}`;
+
+          if (closedSet.has(key)) continue;
+          closedSet.add(key);
+          explorationOrder.push(curr);
+
+          if (curr[0] === goalCoord[0] && curr[1] === goalCoord[1]) {
+            pathFound = true;
+            break;
+          }
+
+          for (const [dr, dc] of legalActions) {
+            const nr = curr[0] + dr, nc = curr[1] + dc;
+            if (nr >= 0 && nr < rCount && nc >= 0 && nc < cCount && gridMat[nr][nc] === 0) {
+              const nKey = `${nr},${nc}`;
+              if (closedSet.has(nKey)) continue;
+              const tentativeG = gScore[key] + 1;
+              if (gScore[nKey] === undefined || tentativeG < gScore[nKey]) {
+                parent[nKey] = curr;
+                gScore[nKey] = tentativeG;
+                const fVal = tentativeG + h(nr, nc);
+                openSet.push({ coord: [nr, nc], f: fVal });
+              }
+            }
+          }
+        }
+      }
+
+      let path = null;
+      let pathLength = null;
+      if (pathFound) {
+        path = [];
+        let curr = goalCoord;
+        while (curr) {
+          path.unshift(curr);
+          const key = `${curr[0]},${curr[1]}`;
+          curr = parent[key];
+        }
+        pathLength = path.length;
+      }
+
+      const elapsed = Math.max(0.08, performance.now() - t0);
+      return {
+        algorithm: algo,
+        path_found: pathFound,
+        path: path,
+        nodes_explored: explorationOrder.length,
+        path_length: pathLength,
+        execution_time_ms: elapsed,
+        exploration_order: explorationOrder,
+        status_message: pathFound ? `Route discovered (${pathLength} steps)` : "No path exists to the goal"
+      };
+    }
+
+    function generateCompareSummary(resDFS, resBFS, resAStar, rCount, cCount) {
+      let wallCount = 0;
+      for (let r = 0; r < rCount; r++) {
+        for (let c = 0; c < cCount; c++) {
+          if (grid[r][c] === 1) wallCount++;
+        }
+      }
+      const densityPct = ((wallCount / (rCount * cCount)) * 100).toFixed(1);
+      const lines = [`Grid: ${rCount}x${cCount} | Obstacle Density: ${densityPct}%`];
+      if (resBFS.path_found) {
+        lines.push("• Route Status: Path found by all algorithms.");
+        if (resDFS.path_length && resBFS.path_length) {
+          if (resBFS.path_length < resDFS.path_length) {
+            lines.push(`• Path Length: BFS & A* found the optimal path (${resBFS.path_length} steps vs DFS ${resDFS.path_length} steps).`);
+          } else {
+            lines.push(`• Path Length: All found paths of ${resBFS.path_length} steps.`);
+          }
+        }
+        lines.push(`• Exploration: A* explored ${resAStar.nodes_explored} nodes | BFS explored ${resBFS.nodes_explored} nodes | DFS explored ${resDFS.nodes_explored} nodes.`);
+        lines.push(`• Runtimes: DFS: ${resDFS.execution_time_ms.toFixed(3)}ms | BFS: ${resBFS.execution_time_ms.toFixed(3)}ms | A*: ${resAStar.execution_time_ms.toFixed(3)}ms`);
+      } else {
+        lines.push("• Route Status: Goal is unreachable. No path found.");
+      }
+      return lines.join('\n');
+    }
+
+    // =========================================================================
+    // Core Application State
+    // =========================================================================
     let rows = 15;
     let cols = 15;
-    let grid = [];
     let start = [0, 0];
     let goal = [14, 14];
+    // Auto-initialize synchronously with default 15x15 demo grid
+    let grid = getDemoPresetGrid(15);
     let exploredCells = new Set();
     let pathCells = new Set();
     let isMouseDown = false;
@@ -295,7 +560,7 @@
     let animationTimer = null;
     let isAnimating = false;
 
-    // Track latest results per algorithm (null until executed)
+    // Track latest results per algorithm (null until explicitly executed)
     let algorithmResults = {
       DFS: null,
       BFS: null,
@@ -306,38 +571,75 @@
     const ctx = canvas.getContext('2d');
     const wrapper = document.getElementById('canvas-wrapper');
 
-    // Load Demo Preset initially
+    // Load Demo Preset
     async function loadDemo() {
       stopAnimation();
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preset: `demo_${rows}x${rows}` })
-      });
-      const data = await res.json();
-      grid = data.grid;
-      start = data.start;
-      goal = data.goal;
-      resetSearch();
-      setStatus('READY', '#065F46', '#34D399');
-      document.getElementById('summary-box').innerText = `Loaded demonstration preset (${rows}x${cols}). Ready for search.`;
+      try {
+        const res = await fetch('./api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ preset: `demo_${rows}x${rows}` })
+        });
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        const data = await res.json();
+        if (data && Array.isArray(data.grid) && data.grid.length > 0) {
+          grid = data.grid;
+          start = data.start || [0, 0];
+          goal = data.goal || [rows - 1, cols - 1];
+        } else {
+          throw new Error('Invalid grid payload');
+        }
+        resetSearch();
+        setStatus('READY', '#065F46', '#34D399');
+        document.getElementById('summary-box').innerText = `Loaded demonstration preset (${rows}x${cols}). Ready for search.`;
+      } catch (err) {
+        console.warn('API /api/generate fallback engaged:', err);
+        grid = getDemoPresetGrid(rows);
+        start = [0, 0];
+        goal = [rows - 1, cols - 1];
+        resetSearch();
+        setStatus('READY', '#065F46', '#34D399');
+        document.getElementById('summary-box').innerText = `Loaded demonstration preset (${rows}x${cols}). Ready for search.`;
+      }
     }
 
     // Generate Random Solvable Maze
     async function generateRandom() {
       stopAnimation();
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows, cols, density: 0.28, guarantee_solvable: true })
-      });
-      const data = await res.json();
-      grid = data.grid;
-      start = data.start;
-      goal = data.goal;
-      resetSearch();
-      setStatus('READY', '#065F46', '#34D399');
-      document.getElementById('summary-box').innerText = `New random solvable maze generated (${data.wall_density_pct}% walls).`;
+      try {
+        const res = await fetch('./api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows, cols, density: 0.28, guarantee_solvable: true })
+        });
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        const data = await res.json();
+        if (data && Array.isArray(data.grid) && data.grid.length > 0) {
+          grid = data.grid;
+          start = data.start || [0, 0];
+          goal = data.goal || [rows - 1, cols - 1];
+          resetSearch();
+          setStatus('READY', '#065F46', '#34D399');
+          document.getElementById('summary-box').innerText = `New random solvable maze generated (${data.wall_density_pct}% walls).`;
+        } else {
+          throw new Error('Invalid grid payload');
+        }
+      } catch (err) {
+        console.warn('API /api/generate fallback engaged for random maze:', err);
+        grid = generateClientRandomGrid(rows, cols, 0.28, true);
+        start = [0, 0];
+        goal = [rows - 1, cols - 1];
+        resetSearch();
+        setStatus('READY', '#065F46', '#34D399');
+        let wallCount = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) wallCount++;
+          }
+        }
+        const pct = ((wallCount / (rows * cols)) * 100).toFixed(1);
+        document.getElementById('summary-box').innerText = `New random solvable maze generated (${pct}% walls).`;
+      }
     }
 
     function clearWalls() {
@@ -400,17 +702,25 @@
 
     function setStatus(text, bg, fg) {
       const b = document.getElementById('status-badge');
+      if (!b) return;
       b.innerText = text;
       b.style.background = bg;
       b.style.color = fg;
       b.style.borderColor = fg;
     }
 
-    // Canvas Sizing & Rendering
+    // =========================================================================
+    // Robust Canvas Sizing & Rendering
+    // =========================================================================
     function resizeCanvas() {
-      const w = wrapper.clientWidth - 24;
-      const h = wrapper.clientHeight - 24;
-      const size = Math.max(180, Math.min(w, h));
+      if (!wrapper || !canvas) return;
+      const rect = wrapper.getBoundingClientRect();
+      const wrapW = wrapper.clientWidth > 0 ? wrapper.clientWidth : rect.width;
+      const wrapH = wrapper.clientHeight > 0 ? wrapper.clientHeight : rect.height;
+      const w = wrapW > 40 ? wrapW - 24 : 450;
+      const h = wrapH > 40 ? wrapH - 24 : 450;
+      const avail = Math.min(w, h);
+      const size = Math.max(280, Math.floor(avail > 50 ? avail : 450));
       canvas.width = size;
       canvas.height = size;
       render();
@@ -418,7 +728,7 @@
     window.addEventListener('resize', resizeCanvas);
 
     function render() {
-      if (!grid || grid.length === 0) return;
+      if (!grid || grid.length === 0 || !canvas || !ctx) return;
       const cellSize = canvas.width / cols;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -430,7 +740,7 @@
 
           // Color priority
           let fill = '#F3F4F6';
-          if (grid[r][c] === 1) fill = '#374151';
+          if (grid[r] && grid[r][c] === 1) fill = '#374151';
           if (exploredCells.has(key)) fill = '#60A5FA';
           if (pathCells.has(key)) fill = '#FACC15';
           if (r === start[0] && c === start[1]) fill = '#22C55E';
@@ -440,14 +750,14 @@
           ctx.fillRect(x, y, cellSize, cellSize);
 
           // Grid borders
-          ctx.strokeStyle = grid[r][c] === 1 ? '#1F2937' : '#D1D5DB';
+          ctx.strokeStyle = (grid[r] && grid[r][c] === 1) ? '#1F2937' : '#D1D5DB';
           ctx.lineWidth = 1;
           ctx.strokeRect(x, y, cellSize, cellSize);
 
           // Labels
           if ((r === start[0] && c === start[1]) || (r === goal[0] && c === goal[1])) {
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = `bold ${Math.max(10, cellSize * 0.5)}px sans-serif`;
+            ctx.font = `bold ${Math.max(10, Math.floor(cellSize * 0.5))}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(r === start[0] && c === start[1] ? 'S' : 'G', x + cellSize / 2, y + cellSize / 2);
@@ -456,7 +766,9 @@
       }
     }
 
+    // =========================================================================
     // Mouse Interaction
+    // =========================================================================
     function getCellFromMouse(e) {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -506,7 +818,9 @@
 
     window.addEventListener('mouseup', () => { isMouseDown = false; });
 
+    // =========================================================================
     // Search Execution & Animation for a Single Algorithm
+    // =========================================================================
     async function runSearch(algo) {
       stopAnimation();
       setStatus('SEARCHING', '#1E40AF', '#93C5FD');
@@ -517,12 +831,19 @@
       pathCells.clear();
       render();
 
-      const res = await fetch('/api/solve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ algorithm: algo, grid, start, goal })
-      });
-      const data = await res.json();
+      let data = null;
+      try {
+        const res = await fetch('./api/solve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ algorithm: algo, grid, start, goal })
+        });
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        data = await res.json();
+      } catch (err) {
+        console.warn(`API /api/solve failed for ${algo}, using client-side solver:`, err);
+        data = clientSolve(algo, grid, start, goal);
+      }
 
       // Update ONLY this specific algorithm's metric card and result state
       algorithmResults[algo] = data;
@@ -616,42 +937,57 @@
       document.getElementById(`${prefix}-time`).innerText = `${d.execution_time_ms.toFixed(3)} ms`;
     }
 
+    // =========================================================================
     // Compare Algorithms (Simultaneously runs DFS, BFS, and A*)
+    // =========================================================================
     async function runCompare() {
       stopAnimation();
       setStatus('COMPARING', '#4C1D95', '#C4B5FD');
 
-      const res = await fetch('/api/compare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ grid, start, goal })
-      });
-      const data = await res.json();
-      const { dfs, bfs, astar, summary } = data;
+      let dfsData = null, bfsData = null, astarData = null, summaryText = '';
+      try {
+        const res = await fetch('./api/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grid, start, goal })
+        });
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        const data = await res.json();
+        dfsData = data.dfs;
+        bfsData = data.bfs;
+        astarData = data.astar;
+        summaryText = data.summary;
+      } catch (err) {
+        console.warn('API /api/compare failed, using client-side solver comparison:', err);
+        dfsData = clientSolve('DFS', grid, start, goal);
+        bfsData = clientSolve('BFS', grid, start, goal);
+        astarData = clientSolve('A*', grid, start, goal);
+        summaryText = generateCompareSummary(dfsData, bfsData, astarData, rows, cols);
+      }
 
       // Update all three algorithm records & cards simultaneously
-      algorithmResults['DFS'] = dfs;
-      algorithmResults['BFS'] = bfs;
-      algorithmResults['A*'] = astar;
+      algorithmResults['DFS'] = dfsData;
+      algorithmResults['BFS'] = bfsData;
+      algorithmResults['A*'] = astarData;
 
-      updateCard('DFS', dfs);
-      updateCard('BFS', bfs);
-      updateCard('A*', astar);
+      updateCard('DFS', dfsData);
+      updateCard('BFS', bfsData);
+      updateCard('A*', astarData);
 
       // Display optimal route on canvas
       exploredCells.clear();
       pathCells.clear();
-      bfs.exploration_order.forEach(([r, c]) => exploredCells.add(`${r},${c}`));
-      if (bfs.path) bfs.path.forEach(([r, c]) => pathCells.add(`${r},${c}`));
+      bfsData.exploration_order.forEach(([r, c]) => exploredCells.add(`${r},${c}`));
+      if (bfsData.path) bfsData.path.forEach(([r, c]) => pathCells.add(`${r},${c}`));
       render();
 
-      document.getElementById('summary-box').innerText = summary;
-      document.getElementById('detail-analysis').innerText = summary;
+      document.getElementById('summary-box').innerText = summaryText;
+      document.getElementById('detail-analysis').innerText = summaryText;
 
       // Update Bar Charts across all algorithms
       updateCharts();
 
-      if (bfs.path_found) {
+      if (bfsData.path_found) {
         setStatus('SOLVED', '#065F46', '#34D399');
       } else {
         setStatus('NO PATH', '#991B1B', '#FCA5A5');
@@ -707,7 +1043,9 @@
       barEl.style.height = `${Math.max(6, Math.min(100, pct))}%`;
     }
 
+    // =========================================================================
     // Event Listeners
+    // =========================================================================
     document.getElementById('btn-dfs').addEventListener('click', () => runSearch('DFS'));
     document.getElementById('btn-bfs').addEventListener('click', () => runSearch('BFS'));
     document.getElementById('btn-astar').addEventListener('click', () => runSearch('A*'));
@@ -742,11 +1080,33 @@
       document.getElementById('tab-maze').classList.remove('active');
     });
 
-    // Initial Load
-    window.onload = () => {
+    // =========================================================================
+    // Instant Auto-Initialization
+    // =========================================================================
+    function initApp() {
       resizeCanvas();
+      render();
       loadDemo();
-    };
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      render();
+    });
+
+    if (window.ResizeObserver && wrapper) {
+      new ResizeObserver(() => resizeCanvas()).observe(wrapper);
+    }
+
+    // Immediate draw in current cycle
+    resizeCanvas();
+    render();
   </script>
 </body>
 </html>

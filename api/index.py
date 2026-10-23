@@ -15,6 +15,8 @@ import numpy as np
 # Ensure project root directory is on sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
@@ -77,6 +79,8 @@ def index():
 
 @app.route("/api/generate", methods=["POST", "OPTIONS"])
 @app.route("/generate", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/generate", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/api/generate", methods=["POST", "OPTIONS"])
 def generate():
     """Generate a preset or random solvable maze using the NumPy Maze class."""
     if request.method == "OPTIONS":
@@ -113,6 +117,8 @@ def generate():
 
 @app.route("/api/solve", methods=["POST", "OPTIONS"])
 @app.route("/solve", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/solve", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/api/solve", methods=["POST", "OPTIONS"])
 def solve():
     """Execute DFS, BFS, or A* on the supplied maze grid."""
     if request.method == "OPTIONS":
@@ -151,6 +157,8 @@ def solve():
 
 @app.route("/api/compare", methods=["POST", "OPTIONS"])
 @app.route("/compare", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/compare", methods=["POST", "OPTIONS"])
+@app.route("/api/index.py/api/compare", methods=["POST", "OPTIONS"])
 def compare():
     """Run DFS, BFS, and A* simultaneously on the maze and return comparison metrics."""
     if request.method == "OPTIONS":

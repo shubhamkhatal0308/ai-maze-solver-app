@@ -1,5 +1,6 @@
-# External dependencies for AI Maze Solver & Route Visualizer
-# Compatible with both local environments and Vercel serverless deployment
+# Core web application & Vercel serverless deployment dependencies
 Flask>=2.3.0
 numpy>=1.24.0
-matplotlib>=3.7.0
+
+# Optional: Only required for local desktop Tkinter GUI charts (main.py)
+# matplotlib>=3.7.0
