@@ -2,18 +2,17 @@
 api/index.py - Vercel Serverless Entry Point & Flask REST API
 ============================================================
 Exposes the WSGI `app` callable required by Vercel's Python runtime.
-Handles web UI delivery, maze generation, single-algorithm search,
-and multi-algorithm empirical comparisons.
+Serves the HTML5 maze visualizer at '/' and provides API endpoints for
+maze generation, single-algorithm search, and multi-algorithm comparisons.
 """
 
 import os
 import sys
-import json
 from typing import Dict, Any
-from flask import Flask, request, jsonify, Response, send_from_directory
+from flask import Flask, request, jsonify, Response
 import numpy as np
 
-# Ensure project root directory is on sys.path for importing project modules
+# Ensure project root directory is on sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if ROOT_DIR not in sys.path:
@@ -22,44 +21,62 @@ if ROOT_DIR not in sys.path:
 from maze import Maze
 from algorithms import dfs, bfs, astar, SearchResult, validate_path
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=os.path.join(CURRENT_DIR, "templates"),
+    static_folder=os.path.join(ROOT_DIR, "public"),
+)
 
 
-def find_html_path() -> str:
-    """Locate web/index.html across local development and Vercel serverless environments."""
+def get_index_html() -> str:
+    """
+    Load index.html from multiple fallback locations:
+    1. api/templates/index.html (guaranteed to be packaged by Vercel inside api/ directory)
+    2. templates/index.html
+    3. public/index.html
+    4. web/index.html
+    """
     candidates = [
+        os.path.join(CURRENT_DIR, "templates", "index.html"),
+        os.path.join(ROOT_DIR, "templates", "index.html"),
+        os.path.join(ROOT_DIR, "public", "index.html"),
         os.path.join(ROOT_DIR, "web", "index.html"),
-        os.path.join(CURRENT_DIR, "..", "web", "index.html"),
-        os.path.join(CURRENT_DIR, "web", "index.html"),
+        os.path.join(os.getcwd(), "public", "index.html"),
         os.path.join(os.getcwd(), "web", "index.html"),
     ]
     for path in candidates:
         if os.path.exists(path):
-            return os.path.abspath(path)
-    return candidates[0]
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return f.read()
+            except Exception:
+                pass
+    return "<!DOCTYPE html><html><body><h1>AI Maze Solver & Route Visualizer</h1><p>UI loading error.</p></body></html>"
 
 
 @app.after_request
 def add_cors_headers(response: Response) -> Response:
-    """Enable CORS headers for seamless cross-origin and local execution."""
+    """Enable CORS headers for all requests."""
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     return response
 
 
+# Root and static routes
 @app.route("/", methods=["GET"])
+@app.route("/index.html", methods=["GET"])
+@app.route("/api", methods=["GET"])
+@app.route("/api/", methods=["GET"])
+@app.route("/api/index.py", methods=["GET"])
 def index():
     """Serve the interactive HTML5/Canvas maze solver application."""
-    html_file = find_html_path()
-    if os.path.exists(html_file):
-        with open(html_file, "r", encoding="utf-8") as f:
-            content = f.read()
-        return Response(content, mimetype="text/html")
-    return jsonify({"error": "web/index.html not found", "checked": html_file}), 404
+    html = get_index_html()
+    return Response(html, mimetype="text/html")
 
 
 @app.route("/api/generate", methods=["POST", "OPTIONS"])
+@app.route("/generate", methods=["POST", "OPTIONS"])
 def generate():
     """Generate a preset or random solvable maze using the NumPy Maze class."""
     if request.method == "OPTIONS":
@@ -95,6 +112,7 @@ def generate():
 
 
 @app.route("/api/solve", methods=["POST", "OPTIONS"])
+@app.route("/solve", methods=["POST", "OPTIONS"])
 def solve():
     """Execute DFS, BFS, or A* on the supplied maze grid."""
     if request.method == "OPTIONS":
@@ -132,6 +150,7 @@ def solve():
 
 
 @app.route("/api/compare", methods=["POST", "OPTIONS"])
+@app.route("/compare", methods=["POST", "OPTIONS"])
 def compare():
     """Run DFS, BFS, and A* simultaneously on the maze and return comparison metrics."""
     if request.method == "OPTIONS":
@@ -152,10 +171,7 @@ def compare():
     res_bfs = bfs(maze.clone())
     res_astar = astar(maze.clone())
 
-    lines = [
-        f"Grid: {maze.rows}x{maze.cols} | Obstacle Density: {maze.wall_density():.1f}%"
-    ]
-
+    lines = [f"Grid: {maze.rows}x{maze.cols} | Obstacle Density: {maze.wall_density():.1f}%"]
     if res_bfs.path_found:
         lines.append("• Route Status: Path found by all algorithms.")
         if res_dfs.path_length and res_bfs.path_length:
@@ -200,8 +216,17 @@ def compare():
     })
 
 
-# For local execution: python api/index.py
+@app.route("/<path:path>", methods=["GET"])
+def fallback(path):
+    """Fallback route for any static asset or URL rewrite."""
+    for folder in [os.path.join(ROOT_DIR, "public"), os.path.join(ROOT_DIR, "web")]:
+        candidate = os.path.join(folder, path)
+        if os.path.exists(candidate) and not os.path.isdir(candidate):
+            with open(candidate, "rb") as f:
+                return Response(f.read())
+    return Response(get_index_html(), mimetype="text/html")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"Flask AI Maze Solver running at http://localhost:{port}")
     app.run(host="0.0.0.0", port=port, debug=True)
